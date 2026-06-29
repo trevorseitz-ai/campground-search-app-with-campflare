@@ -1,5 +1,6 @@
 'use client'
 
+import { SearchX } from 'lucide-react'
 import type { Campground, SearchParams } from '@/lib/campflare-types'
 import { CampgroundCard } from './campground-card'
 
@@ -26,7 +27,9 @@ export function ResultsGrid({ campgrounds, searchParams, minPrice, maxPrice }: R
   if (filtered.length === 0) {
     return (
       <div className="text-center py-16 text-muted-foreground">
-        <div className="text-4xl mb-3 select-none">&#127794;</div>
+        <div className="flex justify-center mb-3" aria-hidden="true">
+          <SearchX size={40} className="text-muted-foreground/50" />
+        </div>
         <p className="text-base font-medium text-foreground">No campgrounds found</p>
         <p className="text-sm mt-1">
           Try adjusting your dates, location, or filters.

@@ -13,14 +13,14 @@ export async function POST(req: NextRequest) {
   const { query, checkIn, checkOut, petFriendly, fullHookups } = await req.json()
 
   if (!query && !checkIn) {
-    return NextResponse.json({ error: 'At least a query or dates are required' }, { status: 400 })
+    return NextResponse.json({ error: 'Please enter a location or campground name.' }, { status: 400 })
   }
 
-  // Build amenities filter
+  // Build amenities filter — note: Campflare API uses 'eletric-hookups' (their spelling)
   const amenities: string[] = []
   if (petFriendly) amenities.push('pets-allowed')
   if (fullHookups) {
-    amenities.push('eletric-hookups') // API uses this spelling
+    amenities.push('eletric-hookups')
     amenities.push('water-hookups')
     amenities.push('sewer-hookups')
   }
@@ -33,14 +33,17 @@ export async function POST(req: NextRequest) {
     const nights = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
     availability = {
       date_ranges: [{ starting_date: checkIn, nights: Math.max(1, nights) }],
+      // Include first-come-first-serve so waterfront/dispersed sites show up
       status: ['available', 'first-come-first-serve'],
-      campsite_kinds: ['rv'],
+      // Search for RV sites OR water-access sites
+      campsite_kinds: ['rv', 'water-access'],
     }
   }
 
   const body: Record<string, unknown> = {
     limit: 20,
-    campsite_kinds: ['rv'],
+    // Top-level campsite_kinds covers both RV and water-access (treated as OR)
+    campsite_kinds: ['rv', 'water-access'],
   }
 
   if (query) body.query = query

@@ -5,8 +5,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: 'Inter', 'Inter Fallback', sans-serif;
-  --font-heading: 'Inter', 'Inter Fallback', sans-serif;
+  --font-sans: var(--font-inter), 'Inter', sans-serif;
+  --font-heading: var(--font-inter), 'Inter', sans-serif;
   --font-mono: var(--font-geist-mono), 'Geist Mono Fallback';
 
   --color-sidebar-ring: var(--sidebar-ring);

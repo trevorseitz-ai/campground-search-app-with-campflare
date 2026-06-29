@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { format } from 'date-fns'
+import { Zap, Waves, PawPrint } from 'lucide-react'
 import type { SearchParams } from '@/lib/campflare-types'
 
 interface SearchFormProps {
@@ -123,20 +124,20 @@ export function SearchForm({ onSearch, isLoading }: SearchFormProps) {
             label="Full Hookups (W/E/S)"
             active={fullHookups}
             onClick={() => setFullHookups(!fullHookups)}
-            icon="⚡"
+            icon={<Zap size={12} />}
           />
           <FilterChip
             label="Waterfront / Water Access"
             active={true}
             onClick={() => {}}
             locked
-            icon="💧"
+            icon={<Waves size={12} />}
           />
           <FilterChip
             label="Pets Allowed"
             active={petFriendly}
             onClick={() => setPetFriendly(!petFriendly)}
-            icon="🐾"
+            icon={<PawPrint size={12} />}
           />
         </div>
         {fullHookups && (
@@ -162,7 +163,7 @@ interface FilterChipProps {
   active: boolean
   onClick: () => void
   locked?: boolean
-  icon?: string
+  icon?: React.ReactNode
 }
 
 function FilterChip({ label, active, onClick, locked, icon }: FilterChipProps) {
@@ -177,7 +178,7 @@ function FilterChip({ label, active, onClick, locked, icon }: FilterChipProps) {
           : 'bg-card text-foreground border-border hover:border-primary/50'
       } ${locked ? 'cursor-default opacity-90' : 'cursor-pointer'}`}
     >
-      <span aria-hidden>{icon}</span>
+      {icon && <span aria-hidden="true" className="shrink-0">{icon}</span>}
       {label}
       {locked && <span className="text-[10px] opacity-75 ml-1">(always on)</span>}
     </button>
