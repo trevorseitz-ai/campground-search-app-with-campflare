@@ -3,13 +3,21 @@ import { NextRequest, NextResponse } from 'next/server'
 const CAMPFLARE_BASE = 'https://api.campflare.com/v2'
 
 function getHeaders() {
+  const key = process.env.CAMPFLARE_API_KEY
   return {
-    'Authorization': process.env.CAMPFLARE_API_KEY ?? '',
+    'Authorization': key ? `Bearer ${key}` : '',
     'Content-Type': 'application/json',
   }
 }
 
 export async function POST(req: NextRequest) {
+  if (!process.env.CAMPFLARE_API_KEY) {
+    return NextResponse.json(
+      { error: 'CAMPFLARE_API_KEY is not configured. Add it in your Vercel project environment variables.' },
+      { status: 500 }
+    )
+  }
+
   const { query, checkIn, checkOut, petFriendly, fullHookups } = await req.json()
 
   if (!query && !checkIn) {

@@ -3,8 +3,9 @@ import { NextRequest, NextResponse } from 'next/server'
 const CAMPFLARE_BASE = 'https://api.campflare.com/v2'
 
 function getHeaders() {
+  const key = process.env.CAMPFLARE_API_KEY
   return {
-    'Authorization': process.env.CAMPFLARE_API_KEY ?? '',
+    'Authorization': key ? `Bearer ${key}` : '',
     'Content-Type': 'application/json',
   }
 }
@@ -13,6 +14,12 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!process.env.CAMPFLARE_API_KEY) {
+    return NextResponse.json(
+      { error: 'CAMPFLARE_API_KEY is not configured.' },
+      { status: 500 }
+    )
+  }
   const { id } = await params
   const { searchParams } = new URL(req.url)
   const startDate = searchParams.get('start_date')
