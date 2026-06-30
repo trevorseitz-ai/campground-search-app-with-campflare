@@ -53,22 +53,27 @@ export async function POST(req: NextRequest) {
     campsite_kinds: ['rv', 'water-access'],
   }
 
-  if (query) body.query = query
   if (amenities.length > 0) body.amenities = amenities
   if (availability) body.availability = availability
 
-  // If a radius (in miles) is provided alongside a text query, geocode the query
-  // client-side and pass a bbox. When no coords come through we skip bbox entirely
-  // so the text query alone still works.
-  if (radiusMiles && typeof radiusMiles === 'number' && radiusMiles > 0) {
-    // Try to geocode the query string using the free nominatim API
+  // If a radius is provided, geocode the query and build a bbox.
+  // When bbox is set we drop the text query from the body so Campflare
+  // searches by geography only — mixing query + bbox returns nothing.
+  let geocoded = false
+  if (radiusMiles && typeof radiusMiles === 'number' && radiusMiles > 0 && query) {
     try {
-      const geo = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`,
-        { headers: { 'User-Agent': 'rv-campsite-finder/1.0' } }
-      )
+      // Detect bare US zip codes and use Nominatim's postalcode param for accuracy
+      const isZip = /^\d{5}(-\d{4})?$/.test(query.trim())
+      const nominatimUrl = isZip
+        ? `https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(query.trim())}&countrycodes=us&format=json&limit=1`
+        : `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&countrycodes=us&format=json&limit=1`
+
+      const geo = await fetch(nominatimUrl, {
+        headers: { 'User-Agent': 'rv-campsite-finder/1.0' },
+      })
       const geoData = await geo.json()
-      if (geoData.length > 0) {
+
+      if (Array.isArray(geoData) && geoData.length > 0) {
         const lat = parseFloat(geoData[0].lat)
         const lon = parseFloat(geoData[0].lon)
         // 1 degree latitude ≈ 69 miles; 1 degree longitude ≈ 69 * cos(lat) miles
@@ -80,11 +85,16 @@ export async function POST(req: NextRequest) {
           min_longitude: lon - lonDelta,
           max_longitude: lon + lonDelta,
         }
+        geocoded = true
       }
     } catch {
-      // Geocoding failed — fall back to text-only search, bbox is skipped
+      // Geocoding failed — fall through to text-only search
     }
   }
+
+  // Only include text query when we did NOT successfully geocode.
+  // Campflare treats query as a name search; combining it with bbox yields no results.
+  if (query && !geocoded) body.query = query
 
   const searchRes = await fetch(`${CAMPFLARE_BASE}/campgrounds/search`, {
     method: 'POST',
