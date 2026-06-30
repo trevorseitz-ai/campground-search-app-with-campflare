@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import { Map } from 'lucide-react'
 import type { Campground, Campsite, CampsiteAvailability } from '@/lib/campflare-types'
 import { CampsiteList } from './campsite-list'
 
@@ -23,6 +24,16 @@ export function CampgroundCard({ campground, checkIn, checkOut }: CampgroundCard
   const locationStr = address
     ? [address.city, address.state_code].filter(Boolean).join(', ')
     : ''
+
+  const lat = campground.location?.latitude
+  const lng = campground.location?.longitude
+  const mapUrl = lat && lng
+    ? `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
+    : address
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+        [campground.name, address.city, address.state_code].filter(Boolean).join(', ')
+      )}`
+    : null
 
   async function handleExpand() {
     if (expanded) {
@@ -135,6 +146,18 @@ export function CampgroundCard({ campground, checkIn, checkOut }: CampgroundCard
           >
             {expanded ? 'Hide Sites' : 'View Available Sites'}
           </button>
+          {mapUrl && (
+            <a
+              href={mapUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Open ${campground.name} in Google Maps`}
+              className="flex items-center justify-center gap-1.5 rounded-lg border border-border text-foreground text-sm font-medium px-3 py-2 hover:bg-muted transition-colors shrink-0"
+            >
+              <Map size={15} />
+              <span>Map</span>
+            </a>
+          )}
           {campground.reservation_url && (
             <a
               href={campground.reservation_url}
