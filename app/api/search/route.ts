@@ -5,7 +5,7 @@ const CAMPFLARE_BASE = 'https://api.campflare.com/v2'
 function getHeaders() {
   const key = process.env.CAMPFLARE_API_KEY
   return {
-    'Authorization': key ? `Bearer ${key}` : '',
+    'Authorization': key ?? '',
     'Content-Type': 'application/json',
   }
 }
