@@ -24,11 +24,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Please enter a location or campground name.' }, { status: 400 })
   }
 
-  // Build amenities filter — note: Campflare API uses 'eletric-hookups' (their spelling)
   const amenities: string[] = []
   if (petFriendly) amenities.push('pets-allowed')
   if (fullHookups) {
-    amenities.push('eletric-hookups')
+    amenities.push('electric-hookups')
     amenities.push('water-hookups')
     amenities.push('sewer-hookups')
   }
