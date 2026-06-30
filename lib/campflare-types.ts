@@ -117,6 +117,7 @@ export interface SearchParams {
   fullHookups: boolean
   minPrice?: number
   maxPrice?: number
+  radiusMiles?: number
 }
 
 export interface SearchResult {

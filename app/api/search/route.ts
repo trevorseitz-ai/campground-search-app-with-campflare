@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  const { query, checkIn, checkOut, petFriendly, fullHookups } = await req.json()
+  const { query, checkIn, checkOut, petFriendly, fullHookups, radiusMiles } = await req.json()
 
   if (!query && !checkIn) {
     return NextResponse.json({ error: 'Please enter a location or campground name.' }, { status: 400 })
@@ -56,6 +56,35 @@ export async function POST(req: NextRequest) {
   if (query) body.query = query
   if (amenities.length > 0) body.amenities = amenities
   if (availability) body.availability = availability
+
+  // If a radius (in miles) is provided alongside a text query, geocode the query
+  // client-side and pass a bbox. When no coords come through we skip bbox entirely
+  // so the text query alone still works.
+  if (radiusMiles && typeof radiusMiles === 'number' && radiusMiles > 0) {
+    // Try to geocode the query string using the free nominatim API
+    try {
+      const geo = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`,
+        { headers: { 'User-Agent': 'rv-campsite-finder/1.0' } }
+      )
+      const geoData = await geo.json()
+      if (geoData.length > 0) {
+        const lat = parseFloat(geoData[0].lat)
+        const lon = parseFloat(geoData[0].lon)
+        // 1 degree latitude ≈ 69 miles; 1 degree longitude ≈ 69 * cos(lat) miles
+        const latDelta = radiusMiles / 69
+        const lonDelta = radiusMiles / (69 * Math.cos((lat * Math.PI) / 180))
+        body.bbox = {
+          min_latitude: lat - latDelta,
+          max_latitude: lat + latDelta,
+          min_longitude: lon - lonDelta,
+          max_longitude: lon + lonDelta,
+        }
+      }
+    } catch {
+      // Geocoding failed — fall back to text-only search, bbox is skipped
+    }
+  }
 
   const searchRes = await fetch(`${CAMPFLARE_BASE}/campgrounds/search`, {
     method: 'POST',
