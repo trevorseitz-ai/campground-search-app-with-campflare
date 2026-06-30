@@ -21,6 +21,7 @@ export function SearchForm({ onSearch, isLoading }: SearchFormProps) {
   const [fullHookups, setFullHookups] = useState(true)
   const [minPrice, setMinPrice] = useState('')
   const [maxPrice, setMaxPrice] = useState('')
+  const [radiusMiles, setRadiusMiles] = useState<number | ''>('')
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -32,24 +33,50 @@ export function SearchForm({ onSearch, isLoading }: SearchFormProps) {
       fullHookups,
       minPrice: minPrice ? Number(minPrice) : undefined,
       maxPrice: maxPrice ? Number(maxPrice) : undefined,
+      radiusMiles: radiusMiles !== '' ? Number(radiusMiles) : undefined,
     })
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      {/* Location / Name Search */}
-      <div>
-        <label htmlFor="query" className="block text-sm font-medium text-foreground mb-1.5">
-          Location or Campground Name
-        </label>
-        <input
-          id="query"
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="e.g. Lake Tahoe, CA or Yosemite"
-          className="w-full rounded-lg border border-border bg-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-        />
+      {/* Location / Name Search + Distance */}
+      <div className="space-y-3">
+        <div>
+          <label htmlFor="query" className="block text-sm font-medium text-foreground mb-1.5">
+            Location or Campground Name
+          </label>
+          <input
+            id="query"
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="e.g. Lake Tahoe, CA or Yosemite"
+            className="w-full rounded-lg border border-border bg-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          />
+        </div>
+        <div>
+          <label htmlFor="radius" className="block text-sm font-medium text-foreground mb-1.5">
+            Distance from Location
+          </label>
+          <select
+            id="radius"
+            value={radiusMiles}
+            onChange={(e) => setRadiusMiles(e.target.value === '' ? '' : Number(e.target.value))}
+            className="w-full rounded-lg border border-border bg-card px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          >
+            <option value="">Any distance</option>
+            <option value="25">Within 25 miles</option>
+            <option value="50">Within 50 miles</option>
+            <option value="100">Within 100 miles</option>
+            <option value="150">Within 150 miles</option>
+            <option value="200">Within 200 miles</option>
+          </select>
+          {radiusMiles !== '' && !query && (
+            <p className="mt-1 text-xs text-muted-foreground">
+              Enter a location above to use distance filtering.
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Date Range */}

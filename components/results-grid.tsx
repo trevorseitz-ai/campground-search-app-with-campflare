@@ -1,8 +1,10 @@
 'use client'
 
-import { SearchX } from 'lucide-react'
+import { useState } from 'react'
+import { SearchX, Map, LayoutGrid } from 'lucide-react'
 import type { Campground, SearchParams } from '@/lib/campflare-types'
 import { CampgroundCard } from './campground-card'
+import { CampgroundMap } from './campground-map'
 
 interface ResultsGridProps {
   campgrounds: Campground[]
@@ -12,7 +14,10 @@ interface ResultsGridProps {
 }
 
 export function ResultsGrid({ campgrounds, searchParams, minPrice, maxPrice }: ResultsGridProps) {
-  // Client-side price filter if the user set one
+  const [showMap, setShowMap] = useState(false)
+  const [selectedId, setSelectedId] = useState<string | undefined>()
+
+  // Client-side price filter
   let filtered = campgrounds
   if (minPrice !== undefined || maxPrice !== undefined) {
     filtered = campgrounds.filter((c) => {
@@ -23,6 +28,10 @@ export function ResultsGrid({ campgrounds, searchParams, minPrice, maxPrice }: R
       return true
     })
   }
+
+  const mappable = filtered.filter(
+    (c) => c.location?.latitude != null && c.location?.longitude != null
+  )
 
   if (filtered.length === 0) {
     return (
@@ -40,18 +49,71 @@ export function ResultsGrid({ campgrounds, searchParams, minPrice, maxPrice }: R
 
   return (
     <div>
-      <p className="text-sm text-muted-foreground mb-4">
-        {filtered.length} campground{filtered.length !== 1 ? 's' : ''} found
-        {searchParams.query ? ` near "${searchParams.query}"` : ''}
-      </p>
+      {/* Header row */}
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-sm text-muted-foreground">
+          {filtered.length} campground{filtered.length !== 1 ? 's' : ''} found
+          {searchParams.query ? ` near "${searchParams.query}"` : ''}
+        </p>
+
+        {mappable.length > 0 && (
+          <button
+            onClick={() => setShowMap((v) => !v)}
+            className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
+              showMap
+                ? 'border-primary bg-primary text-primary-foreground'
+                : 'border-border bg-card text-foreground hover:border-primary/50'
+            }`}
+            aria-pressed={showMap}
+          >
+            {showMap ? <LayoutGrid size={13} /> : <Map size={13} />}
+            {showMap ? 'List View' : 'Map View'}
+          </button>
+        )}
+      </div>
+
+      {/* Map */}
+      {showMap && mappable.length > 0 && (
+        <div className="mb-5">
+          <CampgroundMap
+            campgrounds={filtered}
+            selectedId={selectedId}
+            onSelect={(id) => {
+              setSelectedId(id)
+              // Scroll the matching card into view
+              document.getElementById(`campground-${id}`)?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest',
+              })
+            }}
+          />
+          {mappable.length < filtered.length && (
+            <p className="text-xs text-muted-foreground mt-1.5">
+              {filtered.length - mappable.length} campground{filtered.length - mappable.length !== 1 ? 's' : ''} without coordinates not shown on map.
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {filtered.map((campground) => (
-          <CampgroundCard
+          <div
             key={campground.id}
-            campground={campground}
-            checkIn={searchParams.checkIn}
-            checkOut={searchParams.checkOut}
-          />
+            id={`campground-${campground.id}`}
+            onClick={() => setSelectedId(campground.id)}
+            className={`rounded-xl transition-shadow ${
+              selectedId === campground.id && showMap
+                ? 'ring-2 ring-primary ring-offset-2'
+                : ''
+            }`}
+          >
+            <CampgroundCard
+              campground={campground}
+              checkIn={searchParams.checkIn}
+              checkOut={searchParams.checkOut}
+            />
+          </div>
         ))}
       </div>
     </div>
