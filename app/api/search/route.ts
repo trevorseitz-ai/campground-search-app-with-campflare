@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  const { query, checkIn, checkOut, petFriendly, fullHookups, radiusMiles } = await req.json()
+  const { query, checkIn, checkOut, petFriendly, fullHookups, radiusMiles, waterfront } = await req.json()
 
   if (!query && !checkIn) {
     return NextResponse.json({ error: 'Please enter a location or campground name.' }, { status: 400 })
@@ -32,6 +32,11 @@ export async function POST(req: NextRequest) {
     amenities.push('sewer-hookups')
   }
 
+  const campsite_kinds = ['rv']
+  if (waterfront) {
+    campsite_kinds.push('water-access')
+  }
+
   // Build availability filter if dates are provided
   let availability: Record<string, unknown> | undefined = undefined
   if (checkIn && checkOut) {
@@ -42,15 +47,13 @@ export async function POST(req: NextRequest) {
       date_ranges: [{ starting_date: checkIn, nights: Math.max(1, nights) }],
       // Include first-come-first-serve so waterfront/dispersed sites show up
       status: ['available', 'first-come-first-serve'],
-      // Search for RV sites OR water-access sites
-      campsite_kinds: ['rv', 'water-access'],
+      campsite_kinds,
     }
   }
 
   const body: Record<string, unknown> = {
     limit: 20,
-    // Top-level campsite_kinds covers both RV and water-access (treated as OR)
-    campsite_kinds: ['rv', 'water-access'],
+    campsite_kinds,
   }
 
   if (amenities.length > 0) body.amenities = amenities

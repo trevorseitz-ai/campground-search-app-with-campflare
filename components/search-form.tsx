@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { format } from 'date-fns'
-import { Zap, Waves, PawPrint } from 'lucide-react'
+import { Zap, Waves } from 'lucide-react'
 import type { SearchParams } from '@/lib/campflare-types'
 
 interface SearchFormProps {
@@ -17,8 +17,8 @@ export function SearchForm({ onSearch, isLoading }: SearchFormProps) {
   const [query, setQuery] = useState('')
   const [checkIn, setCheckIn] = useState(today)
   const [checkOut, setCheckOut] = useState(tomorrow)
-  const [petFriendly, setPetFriendly] = useState(false)
   const [fullHookups, setFullHookups] = useState(true)
+  const [waterfront, setWaterfront] = useState(true)
   const [minPrice, setMinPrice] = useState('')
   const [maxPrice, setMaxPrice] = useState('')
   const [radiusMiles, setRadiusMiles] = useState<number | ''>('')
@@ -29,8 +29,9 @@ export function SearchForm({ onSearch, isLoading }: SearchFormProps) {
       query,
       checkIn,
       checkOut,
-      petFriendly,
+      petFriendly: true,
       fullHookups,
+      waterfront,
       minPrice: minPrice ? Number(minPrice) : undefined,
       maxPrice: maxPrice ? Number(maxPrice) : undefined,
       radiusMiles: radiusMiles !== '' ? Number(radiusMiles) : undefined,
@@ -155,16 +156,9 @@ export function SearchForm({ onSearch, isLoading }: SearchFormProps) {
           />
           <FilterChip
             label="Waterfront / Water Access"
-            active={true}
-            onClick={() => {}}
-            locked
+            active={waterfront}
+            onClick={() => setWaterfront(!waterfront)}
             icon={<Waves size={12} />}
-          />
-          <FilterChip
-            label="Pets Allowed"
-            active={petFriendly}
-            onClick={() => setPetFriendly(!petFriendly)}
-            icon={<PawPrint size={12} />}
           />
         </div>
         {fullHookups && (

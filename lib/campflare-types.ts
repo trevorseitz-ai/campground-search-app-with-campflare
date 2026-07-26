@@ -115,6 +115,7 @@ export interface SearchParams {
   checkOut: string
   petFriendly: boolean
   fullHookups: boolean
+  waterfront: boolean
   minPrice?: number
   maxPrice?: number
   radiusMiles?: number
