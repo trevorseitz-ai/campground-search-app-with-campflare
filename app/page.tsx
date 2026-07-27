@@ -353,7 +353,7 @@ export default function RVCampsiteLanding() {
               { q: 'Do you offer group discounts?', a: 'Contact our group sales team for reservations of 5 or more sites. We can help coordinate caravan trips and group getaways.' },
               { q: 'Can I cancel or modify my booking?', a: 'Each campground has its own cancellation policy. Review the specific policy before booking. Most sites allow modifications up to 14 days before arrival.' },
             ].map((item, idx) => (
-              <details key={idx} onToggle={handleDetailsToggle} style={{ border: '1px solid #e0e0e0', borderRadius: '4px', padding: '1.5rem', cursor: 'pointer' }} defaultOpen={idx === 0}>
+              <details key={idx} onToggle={handleDetailsToggle} style={{ border: '1px solid #e0e0e0', borderRadius: '4px', padding: '1.5rem', cursor: 'pointer' }} open={idx === 0}>
                 <summary style={{ fontWeight: '700', color: '#1a3a34', fontSize: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', listStyle: 'none' }}>
                   {item.q}
                   <span style={{ fontSize: '18px', fontWeight: '700', color: '#1b7f5e' }}>+</span>
